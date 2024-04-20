@@ -7,6 +7,11 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * Represents an output strategy that writes data of patients to files
+ * in a structured and organized way.
+ */
+
 public class FileOutputStrategy implements OutputStrategy {
      
     // Directory where the files will be stored
@@ -15,17 +20,29 @@ public class FileOutputStrategy implements OutputStrategy {
     // Map to store file paths based on label 
     public final ConcurrentHashMap<String, String> file_map = new ConcurrentHashMap<>();
     
-    // create constructor
-    public FileOutputStrategy(String baseDirectory) {
+    /**
+     * Constructs a new FileOutputStrategy with the specified base directory.
+     * 
+     * @param baseDirectory where files will be stored.
+     */
 
+    public FileOutputStrategy(String baseDirectory) {
         this.baseDirectory = baseDirectory;
     }
 
     @Override
+     /**
+     * Outputs the patient data to a file.
+     * 
+     * @param patientId, Integer representing the ID of the patient. 
+     * @param timestamp, Long representing the timestamp of the data.
+     * @param label, String of the label associated with the data.
+     * @param data, String representing the data to be written to the file.
+     */
     public void output(int patientId, long timestamp, String label, String data) {
         try {
             // Create the directory
-            Files.createDirectories(Paths.get(BaseDirectory));
+            Files.createDirectories(Paths.get(baseDirectory));
         } catch (IOException e) {
         	// Error handling
             System.err.println("Error creating base directory: " + e.getMessage());
@@ -33,7 +50,8 @@ public class FileOutputStrategy implements OutputStrategy {
         }
         // Set the file path variable, based on the label and ensure it's unique
         // Changed variable name "FilePath" to camelCase
-        String filePath = Paths.get(file_map.computeIfAbsent(label, k -> Paths.get(BaseDirectory, label + ".txt").toString()));
+        String filePath =  file_map.computeIfAbsent(label, k -> Paths.get(baseDirectory, label + ".txt").toString());
+
 
         // Write the data to the file
         try (PrintWriter out = new PrintWriter(
