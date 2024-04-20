@@ -38,8 +38,10 @@ public class FileOutputStrategy implements OutputStrategy {
         // Write the data to the file
         try (PrintWriter out = new PrintWriter(
                 Files.newBufferedWriter(Paths.get(filePath), StandardOpenOption.CREATE, StandardOpenOption.APPEND))) {
+                	// Write formatted data to the file
             out.printf("Patient ID: %d, Timestamp: %d, Label: %s, Data: %s%n", patientId, timestamp, label, data);
         } catch (IOException e) { // Handle specific exception type
+         // Error handling: Print error message if writing to file fails
             System.err.println("Error writing to file " + filePath + ": " + e.getMessage());
         }
     }
