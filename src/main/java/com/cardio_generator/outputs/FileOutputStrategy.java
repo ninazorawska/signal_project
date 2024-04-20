@@ -8,14 +8,17 @@ import java.nio.file.StandardOpenOption;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class FileOutputStrategy implements OutputStrategy {
+     
+    // Directory where the files will be stored
+    private String baseDirectory; // Changed variable name to camelCase
 
-    private String BaseDirectory;
-
+    // Map to store file paths based on label 
     public final ConcurrentHashMap<String, String> file_map = new ConcurrentHashMap<>();
-
+    
+    // create constructor
     public FileOutputStrategy(String baseDirectory) {
 
-        this.BaseDirectory = baseDirectory;
+        this.baseDirectory = baseDirectory;
     }
 
     @Override
@@ -24,18 +27,20 @@ public class FileOutputStrategy implements OutputStrategy {
             // Create the directory
             Files.createDirectories(Paths.get(BaseDirectory));
         } catch (IOException e) {
+        	// Error handling
             System.err.println("Error creating base directory: " + e.getMessage());
             return;
         }
-        // Set the FilePath variable
-        String FilePath = file_map.computeIfAbsent(label, k -> Paths.get(BaseDirectory, label + ".txt").toString());
+        // Set the file path variable, based on the label and ensure it's unique
+        // Changed variable name "FilePath" to camelCase
+        String filePath = Paths.get(file_map.computeIfAbsent(label, k -> Paths.get(BaseDirectory, label + ".txt").toString()));
 
         // Write the data to the file
         try (PrintWriter out = new PrintWriter(
-                Files.newBufferedWriter(Paths.get(FilePath), StandardOpenOption.CREATE, StandardOpenOption.APPEND))) {
+                Files.newBufferedWriter(Paths.get(filePath), StandardOpenOption.CREATE, StandardOpenOption.APPEND))) {
             out.printf("Patient ID: %d, Timestamp: %d, Label: %s, Data: %s%n", patientId, timestamp, label, data);
-        } catch (Exception e) {
-            System.err.println("Error writing to file " + FilePath + ": " + e.getMessage());
+        } catch (IOException e) { // Handle specific exception type
+            System.err.println("Error writing to file " + filePath + ": " + e.getMessage());
         }
     }
 }
