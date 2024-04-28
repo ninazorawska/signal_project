@@ -64,7 +64,12 @@ java -jar target/target/cardio_generator-1.0-SNAPSHOT.jar --patient-count 100 --
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-##Project members
+## Project members
 
 Student ID: 6320546
 Student ID: 6350761
+
+## UML, state and sequence diagrams of the Health Monitoring System
+
+https://github.com/ninazorawska/signal_project/tree/c8ad5ef271d3ebae3ecf5ab37a0162800ad6c86e/uml_models
+
