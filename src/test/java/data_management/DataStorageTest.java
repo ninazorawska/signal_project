@@ -2,9 +2,9 @@ package data_management;
 
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import com.data_management.DataReader;
 import com.data_management.DataStorage;
+import com.data_management.FileDataReader;
 import com.data_management.PatientRecord;
 
 import java.util.List;
@@ -14,7 +14,7 @@ class DataStorageTest {
     @Test
     void testAddAndGetRecords() {
 
-        DataReader reader = 
+        DataReader reader = new FileDataReader();
         // TODO Perhaps you can implement a mock data reader to mock the test data?
         DataStorage storage = new DataStorage(reader);
         storage.addPatientData(1, 100.0, "WhiteBloodCells", 1714376789050L);
