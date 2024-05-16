@@ -1,51 +1,48 @@
 package com.data_management;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
 
-public class FileDataReader implements DataReader {
 
-    @Override
-    public void readData(Path directoryPath, DataStorage dataStorage) throws IOException {
-        // Ensure the directory exists
-        if (!Files.isDirectory(directoryPath)) {
-            throw new IllegalArgumentException("Specified path is not a directory: " + directoryPath);
-        }
+    public class FileDataReader implements DataReader {
 
-        // Get a list of files in the directory
-        List<Path> files = Files.list(directoryPath).toList();
-
-        // Iterate through each file
-        for (Path file : files) {
-            if (Files.isRegularFile(file)) {
-                // Process each regular file
-                readDataFromFile(file.toFile(), dataStorage);
+        @Override
+        public void readData(Path directoryPath, DataStorage dataStorage) throws IOException {
+            // Ensure the directory exists
+            if (!Files.isDirectory(directoryPath)) {
+                throw new IllegalArgumentException("Specified path is not a directory: " + directoryPath);
+            }
+    
+            // Iterate through files in the directory
+            try (var stream = Files.list(directoryPath)) {
+                stream.filter(Files::isRegularFile)
+                      .forEach(file -> parseAndStoreData(file, dataStorage));
             }
         }
-    }
-
-    private void readDataFromFile(File file, DataStorage dataStorage) throws IOException {
-        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                // Assuming each line represents a data entry
-                // Split the line and extract relevant data
-                String[] parts = line.split(",");
-                if (parts.length >= 4) {
-                    int patientId = Integer.parseInt(parts[0]);
-                    double measurementValue = Double.parseDouble(parts[1]);
-                    String measurementType = parts[2];
-                    long timestamp = Long.parseLong(parts[3]);
-                    
-                    // Create a PatientRecord and add it to the DataStorage
-                    dataStorage.addPatientData(patientId, measurementValue, measurementType, timestamp);
+    
+        private void parseAndStoreData(Path filePath, DataStorage dataStorage) {
+            try (BufferedReader reader = new BufferedReader(new FileReader(filePath.toFile()))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    // Parse each line to extract data
+                    // Assuming data format: <patientId>,<measurementValue>,<recordType>,<timestamp>
+                    String[] parts = line.split(",");
+                    if (parts.length == 4) {
+                        int patientId = Integer.parseInt(parts[0].trim());
+                        double measurementValue = Double.parseDouble(parts[1].trim());
+                        String recordType = parts[2].trim();
+                        long timestamp = Long.parseLong(parts[3].trim());
+    
+                        // Add parsed data to DataStorage
+                        dataStorage.addPatientData(patientId, measurementValue, recordType, timestamp);
+                    }
                 }
+            } catch (IOException e) {
+                System.err.println("Error reading file: " + filePath);
+                e.printStackTrace();
             }
         }
     }
-}

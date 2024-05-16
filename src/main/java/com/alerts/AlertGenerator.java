@@ -2,51 +2,43 @@ package com.alerts;
 
 import com.data_management.DataStorage;
 import com.data_management.Patient;
+import com.data_management.PatientRecord;
 
-/**
- * The {@code AlertGenerator} class is responsible for monitoring patient data
- * and generating alerts when certain predefined conditions are met. This class
- * relies on a {@link DataStorage} instance to access patient data and evaluate
- * it against specific health criteria.
- */
+import java.util.ArrayList;
+import java.util.List;
+
 public class AlertGenerator {
     private DataStorage dataStorage;
+    private List<Alert> alerts;
 
-    /**
-     * Constructs an {@code AlertGenerator} with a specified {@code DataStorage}.
-     * The {@code DataStorage} is used to retrieve patient data that this class
-     * will monitor and evaluate.
-     *
-     * @param dataStorage the data storage system that provides access to patient
-     *                    data
-     */
     public AlertGenerator(DataStorage dataStorage) {
         this.dataStorage = dataStorage;
+        this.alerts = new ArrayList<>();
     }
 
-    /**
-     * Evaluates the specified patient's data to determine if any alert conditions
-     * are met. If a condition is met, an alert is triggered via the
-     * {@link #triggerAlert}
-     * method. This method should define the specific conditions under which an
-     * alert
-     * will be triggered.
-     *
-     * @param patient the patient data to evaluate for alert conditions
-     */
     public void evaluateData(Patient patient) {
-        // Implementation goes here
+        List<PatientRecord> records = patient.getRecords(0, System.currentTimeMillis());
+
+        for (PatientRecord record : records) {
+            if ("HeartRate".equals(record.getRecordType()) && record.getMeasurementValue() > 100) {
+                triggerAlert(patient.getPatientId(), "High Heart Rate", record.getTimestamp(), "Heart rate exceeds 100 bpm.");
+            }
+            if ("BloodPressure".equals(record.getRecordType()) && record.getMeasurementValue() < 80) {
+                triggerAlert(patient.getPatientId(), "Low Blood Pressure", record.getTimestamp(), "Blood pressure below 80 mmHg.");
+            }
+            if ("BloodPressure".equals(record.getRecordType()) && record.getMeasurementValue() > 140) {
+                triggerAlert(patient.getPatientId(), "High Blood Pressure", record.getTimestamp(), "Blood pressure exceeds 140 mmHg.");
+            }
+        }
     }
 
-    /**
-     * Triggers an alert for the monitoring system. This method can be extended to
-     * notify medical staff, log the alert, or perform other actions. The method
-     * currently assumes that the alert information is fully formed when passed as
-     * an argument.
-     *
-     * @param alert the alert object containing details about the alert condition
-     */
-    private void triggerAlert(Alert alert) {
-        // Implementation might involve logging the alert or notifying staff
+    private void triggerAlert(int patientId, String condition, long timestamp, String message) {
+        Alert alert = new Alert(String.valueOf(patientId), condition, timestamp);
+        alerts.add(alert);
+        System.out.println("Alert triggered: " + message);
+    }
+
+    public List<Alert> getAlerts() {
+        return new ArrayList<>(alerts);
     }
 }

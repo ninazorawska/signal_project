@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 
 public interface DataReader {
+
     /**
      * Reads data from a specified source and stores it in the data storage.
      * 
