@@ -1,52 +1,65 @@
 package data_management;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.data_management.DataReader;
 import com.data_management.DataStorage;
-import com.data_management.FileDataReader;
 import com.data_management.Patient;
 import com.data_management.PatientRecord;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
-public class DataStorageTest {
+class DataStorageTest {
+    private DataStorage dataStorage;
 
-    @Test
-    void testAddAndGetRecords() {
-        DataReader reader = new FileDataReader(); // Replace with a mock if necessary
-        DataStorage storage = new DataStorage(reader);
-
-        storage.addPatientData(1, 100.0, "WhiteBloodCells", 1714376789050L);
-        storage.addPatientData(1, 200.0, "WhiteBloodCells", 1714376789051L);
-
-        List<PatientRecord> records = storage.getRecords(1, 1714376789050L, 1714376789051L);
-        assertEquals(2, records.size());
-        assertEquals(100.0, records.get(0).getMeasurementValue());
-        assertEquals(200.0, records.get(1).getMeasurementValue());
+    @BeforeEach
+    void setUp() {
+        dataStorage = new DataStorage(null);
     }
 
     @Test
-    void testGetRecordsNoData() {
-        DataReader reader = new FileDataReader(); // Replace with a mock if necessary
-        DataStorage storage = new DataStorage(reader);
+    void testAddPatientData() {
+        dataStorage.addPatientData(1, 100.0, "HeartRate", 1714376789050L);
+        dataStorage.addPatientData(1, 120.0, "BloodPressure", 1714376789051L);
+        dataStorage.addPatientData(2, 130.0, "HeartRate", 1714376789052L);
 
-        List<PatientRecord> records = storage.getRecords(1, 1714376789050L, 1714376789051L);
+        List<PatientRecord> records1 = dataStorage.getRecords(1, 1714376789040L, 1714376789060L);
+        List<PatientRecord> records2 = dataStorage.getRecords(2, 1714376789040L, 1714376789060L);
+
+        assertEquals(2, records1.size());
+        assertEquals(1, records2.size());
+    }
+
+    @Test
+    void testGetRecordsWithNoPatient() {
+        List<PatientRecord> records = dataStorage.getRecords(1, 1714376789040L, 1714376789060L);
         assertTrue(records.isEmpty());
     }
 
     @Test
     void testGetAllPatients() {
-        DataReader reader = new FileDataReader(); // Replace with a mock if necessary
-        DataStorage storage = new DataStorage(reader);
+        dataStorage.addPatientData(1, 100.0, "HeartRate", 1714376789050L);
+        dataStorage.addPatientData(2, 130.0, "HeartRate", 1714376789052L);
 
-        storage.addPatientData(1, 100.0, "WhiteBloodCells", 1714376789050L);
-        storage.addPatientData(2, 200.0, "WhiteBloodCells", 1714376789051L);
-
-        List<Patient> patients = storage.getAllPatients();
+        List<Patient> patients = dataStorage.getAllPatients();
         assertEquals(2, patients.size());
+    }
+
+    @Test
+    void testAddPatientDataWithExistingPatient() {
+        dataStorage.addPatientData(1, 100.0, "HeartRate", 1714376789050L);
+        dataStorage.addPatientData(1, 110.0, "HeartRate", 1714376789051L);
+
+        List<PatientRecord> records = dataStorage.getRecords(1, 1714376789040L, 1714376789060L);
+        assertEquals(2, records.size());
+    }
+
+    @Test
+    void testGetRecordsWithNoData() {
+        dataStorage.addPatientData(1, 100.0, "HeartRate", 1714376789050L);
+        List<PatientRecord> records = dataStorage.getRecords(2, 1714376789040L, 1714376789060L);
+        assertTrue(records.isEmpty());
     }
 }

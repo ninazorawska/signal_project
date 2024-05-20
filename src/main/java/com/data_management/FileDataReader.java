@@ -23,7 +23,7 @@ import java.nio.file.Path;
             }
         }
     
-        private void parseAndStoreData(Path filePath, DataStorage dataStorage) {
+        public void parseAndStoreData(Path filePath, DataStorage dataStorage) {
             try (BufferedReader reader = new BufferedReader(new FileReader(filePath.toFile()))) {
                 String line;
                 while ((line = reader.readLine()) != null) {
