@@ -29,6 +29,13 @@ public class AlertGenerator {
             if ("BloodPressure".equals(record.getRecordType()) && record.getMeasurementValue() > 140) {
                 triggerAlert(patient.getPatientId(), "High Blood Pressure", record.getTimestamp(), "Blood pressure exceeds 140 mmHg.");
             }
+            if ("Saturation".equals(record.getRecordType()) && record.getMeasurementValue() < 90) {
+                triggerAlert(patient.getPatientId(), "Low Blood Saturation", record.getTimestamp(), "Blood saturation below 90%.");
+            }
+            if ("ECG".equals(record.getRecordType()) && record.getMeasurementValue() > 1.5) {
+                triggerAlert(patient.getPatientId(), "Abnormal ECG", record.getTimestamp(), "ECG value exceeds 1.5 mV.");
+            }
+
         }
     }
 
