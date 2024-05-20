@@ -16,6 +16,10 @@ public class AlertGenerator {
         this.alerts = new ArrayList<>();
     }
 
+    /**
+     * Evaluates patient data to check for conditions that may trigger alerts.
+     * @param patient The patient whose data needs to be evaluated.
+     */
     public void evaluateData(Patient patient) {
         List<PatientRecord> records = patient.getRecords(0, System.currentTimeMillis());
 
@@ -32,12 +36,23 @@ public class AlertGenerator {
         }
     }
 
+    /**
+     * Triggers an alert if a specified condition is met.
+     * @param patientId The ID of the patient for whom the alert is being triggered.
+     * @param condition The condition that triggered the alert.
+     * @param timestamp The time at which the alert was triggered.
+     * @param message A message describing the alert condition.
+     */
     private void triggerAlert(int patientId, String condition, long timestamp, String message) {
         Alert alert = new Alert(String.valueOf(patientId), condition, timestamp);
         alerts.add(alert);
         System.out.println("Alert triggered: " + message);
     }
 
+    /**
+     * Retrieves the list of alerts.
+     * @return A list of alerts.
+     */
     public List<Alert> getAlerts() {
         return new ArrayList<>(alerts);
     }
