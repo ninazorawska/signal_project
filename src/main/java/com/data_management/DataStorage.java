@@ -43,6 +43,7 @@ public class DataStorage {
             patientMap.put(patientId, patient);
         }
         patient.addRecord(measurementValue, recordType, timestamp);
+        System.out.println("Added record to patient " + patientId + ": " + recordType + " with value " + measurementValue);
     }
 
     /**
@@ -53,8 +54,7 @@ public class DataStorage {
      *                  retrieved
      * @param startTime the start of the time range, in milliseconds since the Unix
      *                  epoch
-     * @param endTime   the end of the time range, in milliseconds since the Unix
-     *                  epoch
+     * @param endTime   the end of the time range, in milliseconds since the Unix epoch
      * @return a list of PatientRecord objects that fall within the specified time
      *         range
      */
