@@ -96,4 +96,88 @@ class AlertGeneratorTest {
         assertEquals(1, alerts.size());
         assertEquals("Low Blood Pressure", alerts.get(0).getCondition());
     }
+
+    @Test
+    void testEvaluateDataWithLowBloodSaturation() {
+        Patient mockPatient = mock(Patient.class);
+        List<PatientRecord> records = Arrays.asList(
+                new PatientRecord(1, 89.0, "Saturation", System.currentTimeMillis())
+        );
+        when(mockPatient.getRecords(anyLong(), anyLong())).thenReturn(records);
+
+        alertGenerator.evaluateData(mockPatient);
+
+        List<Alert> alerts = alertGenerator.getAlerts();
+        assertEquals(1, alerts.size());
+        assertEquals("Low Blood Saturation", alerts.get(0).getCondition());
+    }
+
+    @Test
+    void testEvaluateDataWithAbnormalECG() {
+        Patient mockPatient = mock(Patient.class);
+        List<PatientRecord> records = Arrays.asList(
+                new PatientRecord(1, 2.0, "ECG", System.currentTimeMillis())
+        );
+        when(mockPatient.getRecords(anyLong(), anyLong())).thenReturn(records);
+
+        alertGenerator.evaluateData(mockPatient);
+
+        List<Alert> alerts = alertGenerator.getAlerts();
+        assertEquals(1, alerts.size());
+        assertEquals("Abnormal ECG", alerts.get(0).getCondition());
+    }
+
+    @Test
+    void testEvaluateDataWithMultipleConditionsInSingleRecord() {
+        Patient mockPatient = mock(Patient.class);
+        List<PatientRecord> records = Arrays.asList(
+                new PatientRecord(1, 105.0, "HeartRate", System.currentTimeMillis()),
+                new PatientRecord(1, 75.0, "BloodPressure", System.currentTimeMillis())
+        );
+        when(mockPatient.getRecords(anyLong(), anyLong())).thenReturn(records);
+
+        alertGenerator.evaluateData(mockPatient);
+
+        List<Alert> alerts = alertGenerator.getAlerts();
+        assertEquals(2, alerts.size());
+        assertEquals("High Heart Rate", alerts.get(0).getCondition());
+        assertEquals("Low Blood Pressure", alerts.get(1).getCondition());
+    }
+
+    @Test
+    void testEvaluateDataWithBorderlineValues() {
+        Patient mockPatient = mock(Patient.class);
+        List<PatientRecord> records = Arrays.asList(
+                new PatientRecord(1, 100.0, "HeartRate", System.currentTimeMillis()), // Exactly at threshold
+                new PatientRecord(1, 140.0, "BloodPressure", System.currentTimeMillis()) // Exactly at threshold
+        );
+        when(mockPatient.getRecords(anyLong(), anyLong())).thenReturn(records);
+
+        alertGenerator.evaluateData(mockPatient);
+
+        List<Alert> alerts = alertGenerator.getAlerts();
+        assertTrue(alerts.isEmpty());
+    }
+
+    @Test
+    void testEvaluateDataWithDifferentPatients() {
+        Patient mockPatient1 = mock(Patient.class);
+        Patient mockPatient2 = mock(Patient.class);
+        List<PatientRecord> records1 = Arrays.asList(
+                new PatientRecord(1, 105.0, "HeartRate", System.currentTimeMillis())
+        );
+        List<PatientRecord> records2 = Arrays.asList(
+                new PatientRecord(2, 75.0, "BloodPressure", System.currentTimeMillis())
+        );
+        when(mockPatient1.getRecords(anyLong(), anyLong())).thenReturn(records1);
+        when(mockPatient2.getRecords(anyLong(), anyLong())).thenReturn(records2);
+
+        alertGenerator.evaluateData(mockPatient1);
+        alertGenerator.evaluateData(mockPatient2);
+
+        List<Alert> alerts = alertGenerator.getAlerts();
+        assertEquals(2, alerts.size());
+        assertEquals("High Heart Rate", alerts.get(0).getCondition());
+        assertEquals("Low Blood Pressure", alerts.get(1).getCondition());
+    }
 }

@@ -36,15 +36,18 @@ public class DataStorage {
      * @param timestamp        the time at which the measurement was taken, in
      *                         milliseconds since the Unix epoch
      */
-    public void addPatientData(int patientId, double measurementValue, String recordType, long timestamp) {
+    public synchronized void addPatientData(int patientId, double measurementValue, String recordType, long timestamp) {
+        if (recordType == null) {
+            throw new NullPointerException("Record type cannot be null");
+        }
         Patient patient = patientMap.get(patientId);
         if (patient == null) {
             patient = new Patient(patientId);
             patientMap.put(patientId, patient);
         }
         patient.addRecord(measurementValue, recordType, timestamp);
-        System.out.println("Added record to patient " + patientId + ": " + recordType + " with value " + measurementValue);
     }
+    
 
     /**
      * Retrieves a list of PatientRecord objects for a specific patient, filtered by
@@ -108,4 +111,6 @@ public class DataStorage {
             alertGenerator.evaluateData(patient);
         }
     }
+
+    
 }
