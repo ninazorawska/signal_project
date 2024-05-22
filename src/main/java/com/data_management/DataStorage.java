@@ -1,5 +1,6 @@
 package com.data_management;
 
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -13,14 +14,17 @@ import com.alerts.AlertGenerator;
  * patient IDs.
  */
 public class DataStorage {
-    private Map<Integer, Patient> patientMap; // Stores patient objects indexed by their unique patient ID.
+
+     // Concurrent HashMap to store patient records
+    private final ConcurrentHashMap<Integer, Patient> patientMap; // Stores patient objects indexed by their unique patient ID.
+   
 
     /**
      * Constructs a new instance of DataStorage, initializing the underlying storage
      * structure.
      */
     public DataStorage(DataReader reader) {
-        this.patientMap = new HashMap<>();
+        this.patientMap = new ConcurrentHashMap<>();
     }
 
     /**
@@ -40,12 +44,14 @@ public class DataStorage {
         if (recordType == null) {
             throw new NullPointerException("Record type cannot be null");
         }
-        Patient patient = patientMap.get(patientId);
-        if (patient == null) {
-            patient = new Patient(patientId);
-            patientMap.put(patientId, patient);
-        }
-        patient.addRecord(measurementValue, recordType, timestamp);
+
+            Patient patient = patientMap.get(patientId);
+            if (patient == null) {
+                patient = new Patient(patientId);
+                patientMap.put(patientId, patient);
+            }
+            patient.addRecord(measurementValue, recordType, timestamp);
+        
     }
     
 
@@ -75,7 +81,9 @@ public class DataStorage {
      * @return a list of all patients
      */
     public List<Patient> getAllPatients() {
-        return new ArrayList<>(patientMap.values());
+    
+            return new ArrayList<>(patientMap.values());
+       
     }
 
     /**
