@@ -4,36 +4,35 @@ import org.java_websocket.WebSocket;
 import org.java_websocket.server.WebSocketServer;
 
 import java.net.InetSocketAddress;
+import java.util.List;
 
 public class WebSocketOutputStrategy implements OutputStrategy {
-
     private WebSocketServer server;
 
     public WebSocketOutputStrategy(int port) {
         server = new SimpleWebSocketServer(new InetSocketAddress(port));
-        System.out.println("WebSocket server created on port: " + port + ", listening for connections...");
         server.start();
+    }
+
+    public void setServer(WebSocketServer server) {
+        this.server = server;
     }
 
     @Override
     public void output(int patientId, long timestamp, String label, String data) {
-        // Validate input data
         if (label == null || data == null || label.isEmpty() || data.isEmpty()) {
             System.err.println("Invalid data: label and data must be non-null and non-empty.");
             return;
         }
 
-        // Format the message
         String message = String.format("%d,%d,%s,%s", patientId, timestamp, label, data);
 
-        // Broadcast the message to all connected clients
         for (WebSocket conn : server.getConnections()) {
             conn.send(message);
         }
     }
 
     private static class SimpleWebSocketServer extends WebSocketServer {
-
         public SimpleWebSocketServer(InetSocketAddress address) {
             super(address);
         }
