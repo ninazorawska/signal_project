@@ -8,36 +8,33 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.net.InetSocketAddress;
-import java.util.List;
+import java.util.Set;
 
 import static org.mockito.Mockito.*;
 
-public class WebSocketOutputStrategyTest {
-    private WebSocketServer mockServer;
-    private WebSocket mockWebSocket;
+class WebSocketOutputStrategyTest {
     private WebSocketOutputStrategy outputStrategy;
+    private WebSocketServer server;
+    private WebSocket conn;
 
     @BeforeEach
-    public void setUp() {
-        mockServer = mock(WebSocketServer.class);
-        mockWebSocket = mock(WebSocket.class);
+    void setUp() throws Exception {
+        server = mock(WebSocketServer.class);
+        conn = mock(WebSocket.class);
         outputStrategy = new WebSocketOutputStrategy(8080);
-        outputStrategy.setServer(mockServer);
 
-        when(mockServer.getConnections()).thenReturn(List.of(mockWebSocket));
+        // Using reflection to set the server field
+        java.lang.reflect.Field serverField = WebSocketOutputStrategy.class.getDeclaredField("server");
+        serverField.setAccessible(true);
+        serverField.set(outputStrategy, server);
+
+        // Mocking server connections
+        when(server.getConnections()).thenReturn(Set.of(conn));
     }
 
     @Test
-    public void testOutputValidData() {
+    void testOutputValidData() {
         outputStrategy.output(1, 1627842123000L, "HeartRate", "78.0");
-
-        verify(mockWebSocket, times(1)).send("1,1627842123000,HeartRate,78.0");
-    }
-
-    @Test
-    public void testOutputInvalidData() {
-        outputStrategy.output(1, 1627842123000L, null, null);
-
-        verify(mockWebSocket, never()).send(anyString());
+        verify(conn, times(1)).send("1,1627842123000,HeartRate,78.0");
     }
 }

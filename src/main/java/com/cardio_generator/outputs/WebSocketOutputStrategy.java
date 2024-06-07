@@ -50,6 +50,8 @@ public class WebSocketOutputStrategy implements OutputStrategy {
 
     private static class SimpleWebSocketServer extends WebSocketServer {
 
+        private WebSocketServer server;
+
         public SimpleWebSocketServer(InetSocketAddress address) {
             super(address);
         }
@@ -78,5 +80,12 @@ public class WebSocketOutputStrategy implements OutputStrategy {
         public void onStart() {
             System.out.println("Server started successfully");
         }
+        // In WebSocketOutputStrategy.java
+
+    }
+
+    public void setServer(WebSocketServer mockServer) {
+        this.server = server;
+        throw new UnsupportedOperationException("Unimplemented method 'setServer'");
     }
 }
