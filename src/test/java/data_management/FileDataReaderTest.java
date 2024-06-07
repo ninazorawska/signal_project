@@ -19,20 +19,21 @@ import static org.mockito.Mockito.*;
 class FileDataReaderTest {
     private DataStorage mockDataStorage;
     private FileDataReader fileDataReader;
+    private Path tempDir;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws IOException {
         mockDataStorage = mock(DataStorage.class);
-        fileDataReader = new FileDataReader();
+        tempDir = Files.createTempDirectory("tempDir");
+        fileDataReader = new FileDataReader(tempDir);
     }
 
     @Test
     void testReadDataWithValidDirectory() throws IOException {
-        Path tempDir = Files.createTempDirectory("tempDir");
         Path tempFile = Files.createFile(tempDir.resolve("data.csv"));
         Files.write(tempFile, List.of("1,100.0,HeartRate,1714376789050", "2,120.0,BloodPressure,1714376789051"));
 
-        fileDataReader.readData(tempDir, mockDataStorage);
+        fileDataReader.readData(mockDataStorage);
 
         verify(mockDataStorage, times(1)).addPatientData(1, 100.0, "HeartRate", 1714376789050L);
         verify(mockDataStorage, times(1)).addPatientData(2, 120.0, "BloodPressure", 1714376789051L);
@@ -46,7 +47,7 @@ class FileDataReaderTest {
         Path invalidDir = Paths.get("invalidDir");
 
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            fileDataReader.readData(invalidDir, mockDataStorage);
+            new FileDataReader(invalidDir);
         });
 
         assertEquals("Specified path is not a directory: invalidDir", exception.getMessage());
@@ -54,7 +55,7 @@ class FileDataReaderTest {
 
     @Test
     void testParseAndStoreDataWithMalformedData() throws IOException {
-        Path tempFile = Files.createTempFile("data", ".csv");
+        Path tempFile = Files.createTempFile(tempDir, "data", ".csv");
         Files.write(tempFile, List.of("1,100.0,HeartRate", "2,120.0,BloodPressure,1714376789051"));
 
         fileDataReader.parseAndStoreData(tempFile, mockDataStorage);
@@ -67,12 +68,14 @@ class FileDataReaderTest {
 
     @Test
     void testParseAndStoreDataWithValidData() throws IOException {
-        Path tempFile = Files.createTempFile("data", ".csv");
+        Path tempFile = Files.createTempFile(tempDir, "data", ".csv");
         Files.write(tempFile, List.of("1,100.0,HeartRate,1714376789050", "2,120.0,BloodPressure,1714376789051"));
 
         fileDataReader.parseAndStoreData(tempFile, mockDataStorage);
 
         verify(mockDataStorage, times(1)).addPatientData(1, 100.0, "HeartRate", 1714376789050L);
-  
+        verify(mockDataStorage, times(1)).addPatientData(2, 120.0, "BloodPressure", 1714376789051L);
+
+        Files.deleteIfExists(tempFile);
     }
 }

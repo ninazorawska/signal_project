@@ -3,20 +3,25 @@ package data_management;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import com.data_management.DataReader;
 import com.data_management.DataStorage;
 import com.data_management.Patient;
 import com.data_management.PatientRecord;
+import org.mockito.Mockito;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
-class DataStorageTest {
+    class DataStorageTest {
     private DataStorage dataStorage;
+    private DataReader mockDataReader;
 
     @BeforeEach
     void setUp() {
-        dataStorage = new DataStorage(null);
+        mockDataReader = mock(DataReader.class);
+        dataStorage = new DataStorage(mockDataReader);
     }
 
     @Test
@@ -163,4 +168,5 @@ class DataStorageTest {
             dataStorage.addPatientData(1, 100.0, null, 1714376789050L);
         });
     }
-}
+ }
+

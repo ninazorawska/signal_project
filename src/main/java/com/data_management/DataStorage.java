@@ -1,23 +1,27 @@
 package com.data_management;
 
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+
 import com.alerts.AlertGenerator;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.io.IOException;
+
+
 
 /**
  * Manages storage and retrieval of patient data within a healthcare monitoring
- * system.
- * This class serves as a repository for all patient records, organized by
+ * system. This class serves as a repository for all patient records, organized by
  * patient IDs.
  */
 public class DataStorage {
 
-     // Concurrent HashMap to store patient records
-    private final ConcurrentHashMap<Integer, Patient> patientMap; // Stores patient objects indexed by their unique patient ID.
-   
+    // Concurrent HashMap to store patient records
+    private final ConcurrentHashMap<Integer, Patient> patientMap;
 
     /**
      * Constructs a new instance of DataStorage, initializing the underlying storage
@@ -25,47 +29,46 @@ public class DataStorage {
      */
     public DataStorage(DataReader reader) {
         this.patientMap = new ConcurrentHashMap<>();
+
+        try {
+            reader.readData(this);
+        } catch (IOException e) {
+            e.printStackTrace();
+            // Handle the IOException appropriately
+        }
     }
 
     /**
      * Adds or updates patient data in the storage.
      * If the patient does not exist, a new Patient object is created and added to
-     * the storage.
-     * Otherwise, the new data is added to the existing patient's records.
+     * the storage. Otherwise, the new data is added to the existing patient's records.
      *
      * @param patientId        the unique identifier of the patient
      * @param measurementValue the value of the health metric being recorded
-     * @param recordType       the type of record, e.g., "HeartRate",
-     *                         "BloodPressure"
-     * @param timestamp        the time at which the measurement was taken, in
-     *                         milliseconds since the Unix epoch
+     * @param recordType       the type of record, e.g., "HeartRate", "BloodPressure"
+     * @param timestamp        the time at which the measurement was taken, in milliseconds since the Unix epoch
      */
     public synchronized void addPatientData(int patientId, double measurementValue, String recordType, long timestamp) {
         if (recordType == null) {
             throw new NullPointerException("Record type cannot be null");
         }
 
-            Patient patient = patientMap.get(patientId);
-            if (patient == null) {
-                patient = new Patient(patientId);
-                patientMap.put(patientId, patient);
-            }
-            patient.addRecord(measurementValue, recordType, timestamp);
-        
+        Patient patient = patientMap.get(patientId);
+        if (patient == null) {
+            patient = new Patient(patientId);
+            patientMap.put(patientId, patient);
+        }
+        patient.addRecord(measurementValue, recordType, timestamp);
     }
-    
 
     /**
      * Retrieves a list of PatientRecord objects for a specific patient, filtered by
      * a time range.
      *
-     * @param patientId the unique identifier of the patient whose records are to be
-     *                  retrieved
-     * @param startTime the start of the time range, in milliseconds since the Unix
-     *                  epoch
+     * @param patientId the unique identifier of the patient whose records are to be retrieved
+     * @param startTime the start of the time range, in milliseconds since the Unix epoch
      * @param endTime   the end of the time range, in milliseconds since the Unix epoch
-     * @return a list of PatientRecord objects that fall within the specified time
-     *         range
+     * @return a list of PatientRecord objects that fall within the specified time range
      */
     public List<PatientRecord> getRecords(int patientId, long startTime, long endTime) {
         Patient patient = patientMap.get(patientId);
@@ -81,26 +84,32 @@ public class DataStorage {
      * @return a list of all patients
      */
     public List<Patient> getAllPatients() {
-    
-            return new ArrayList<>(patientMap.values());
-       
+        return new ArrayList<>(patientMap.values());
     }
 
     /**
      * The main method for the DataStorage class.
-     * Initializes the system, reads data into storage, and continuously monitors
-     * and evaluates patient data.
-     * 
+     * Initializes the system, reads data into storage, and continuously monitors and evaluates patient data.
+     *
      * @param args command line arguments
      */
     public static void main(String[] args) {
-        // DataReader is not defined in this scope, should be initialized appropriately.
-        DataReader reader = new FileDataReader();
+        // Assuming the directoryPath is provided as a command line argument
+        if (args.length < 1) {
+            System.err.println("Please provide the directory path containing the data files.");
+            return;
+        }
+
+        Path directoryPath = Paths.get(args[0]);
+        DataReader reader = new FileDataReader(directoryPath);
         DataStorage storage = new DataStorage(reader);
 
-        // Assuming the reader has been properly initialized and can read data into the
-        // storage
-        // reader.readData(storage);
+        try {
+            reader.readData(storage);
+        } catch (IOException e) {
+            System.err.println("Error reading data: " + e.getMessage());
+            e.printStackTrace();
+        }
 
         // Example of using DataStorage to retrieve and print records for a patient
         List<PatientRecord> records = storage.getRecords(1, 1700000000000L, 1800000000000L);
@@ -119,6 +128,4 @@ public class DataStorage {
             alertGenerator.evaluateData(patient);
         }
     }
-
-    
 }
