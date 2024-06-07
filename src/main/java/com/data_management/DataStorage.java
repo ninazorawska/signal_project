@@ -1,9 +1,7 @@
 package com.data_management;
 
 import java.util.concurrent.ConcurrentHashMap;
-
 import com.alerts.AlertGenerator;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.nio.file.Files;
@@ -11,12 +9,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.io.IOException;
 
-
-
 /**
- * Manages storage and retrieval of patient data within a healthcare monitoring
- * system. This class serves as a repository for all patient records, organized by
- * patient IDs.
+ * Manages storage and retrieval of patient data within a healthcare monitoring system.
+ * This class serves as a repository for all patient records, organized by patient IDs.
  */
 public class DataStorage {
 
@@ -24,8 +19,9 @@ public class DataStorage {
     private final ConcurrentHashMap<Integer, Patient> patientMap;
 
     /**
-     * Constructs a new instance of DataStorage, initializing the underlying storage
-     * structure.
+     * Constructs a new instance of DataStorage, initializing the underlying storage structure.
+     * 
+     * @param reader DataReader to read the initial data.
      */
     public DataStorage(DataReader reader) {
         this.patientMap = new ConcurrentHashMap<>();
@@ -40,8 +36,8 @@ public class DataStorage {
 
     /**
      * Adds or updates patient data in the storage.
-     * If the patient does not exist, a new Patient object is created and added to
-     * the storage. Otherwise, the new data is added to the existing patient's records.
+     * If the patient does not exist, a new Patient object is created and added to the storage.
+     * Otherwise, the new data is added to the existing patient's records.
      *
      * @param patientId        the unique identifier of the patient
      * @param measurementValue the value of the health metric being recorded
@@ -62,8 +58,7 @@ public class DataStorage {
     }
 
     /**
-     * Retrieves a list of PatientRecord objects for a specific patient, filtered by
-     * a time range.
+     * Retrieves a list of PatientRecord objects for a specific patient, filtered by a time range.
      *
      * @param patientId the unique identifier of the patient whose records are to be retrieved
      * @param startTime the start of the time range, in milliseconds since the Unix epoch
