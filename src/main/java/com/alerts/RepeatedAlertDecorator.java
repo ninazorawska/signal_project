@@ -1,11 +1,32 @@
 package com.alerts;
 
-public class RepeatedAlertDecorator extends AlertDecorator {
+public class RepeatedAlertDecorator implements AlertInterface {
+    private final AlertInterface decoratedAlert;
     private final int repeatCount;
 
     public RepeatedAlertDecorator(AlertInterface decoratedAlert, int repeatCount) {
-        super(decoratedAlert);
+        this.decoratedAlert = decoratedAlert;
         this.repeatCount = repeatCount;
+    }
+
+    @Override
+    public String getPatientId() {
+        return decoratedAlert.getPatientId();
+    }
+
+    @Override
+    public String getCondition() {
+        return decoratedAlert.getCondition();
+    }
+
+    @Override
+    public long getTimestamp() {
+        return decoratedAlert.getTimestamp();
+    }
+
+    @Override
+    public String getPriority() {
+        return decoratedAlert.getPriority();
     }
 
     @Override

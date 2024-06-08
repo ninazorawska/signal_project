@@ -1,9 +1,25 @@
 package com.alerts;
 
-public class PriorityAlertDecorator extends AlertDecorator {
+public class PriorityAlertDecorator implements AlertInterface {
+    private final AlertInterface decoratedAlert;
 
     public PriorityAlertDecorator(AlertInterface decoratedAlert) {
-        super(decoratedAlert);
+        this.decoratedAlert = decoratedAlert;
+    }
+
+    @Override
+    public String getPatientId() {
+        return decoratedAlert.getPatientId();
+    }
+
+    @Override
+    public String getCondition() {
+        return decoratedAlert.getCondition();
+    }
+
+    @Override
+    public long getTimestamp() {
+        return decoratedAlert.getTimestamp();
     }
 
     @Override

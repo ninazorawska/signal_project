@@ -113,18 +113,18 @@ class AlertGeneratorTest {
     assertEquals("Low Blood Saturation (Priority: High) (Repeated 3 times)", alerts.get(0).toString());
 }
 
-    @Test
-    void testEvaluateDataWithAbnormalECG() {
-        Patient mockPatient = mock(Patient.class);
-        List<PatientRecord> records = Arrays.asList(
-            new PatientRecord(1, 2.0, "ECG", System.currentTimeMillis())
+@Test
+void testEvaluateDataWithAbnormalECG() {
+    Patient mockPatient = mock(Patient.class);
+    List<PatientRecord> records = Arrays.asList(
+            new PatientRecord(1, 0.4, "ECG", System.currentTimeMillis())  // Abnormal ECG value
     );
     when(mockPatient.getRecords(anyLong(), anyLong())).thenReturn(records);
 
     alertGenerator.evaluateData(mockPatient);
 
     List<AlertInterface> alerts = alertGenerator.getAlerts();
-    assertEquals(1, alerts.size());
+    assertEquals(1, alerts.size(), "Expected an abnormal ECG alert to be generated.");
     assertEquals("Abnormal ECG (Priority: High) (Repeated 3 times)", alerts.get(0).toString());
 }
 

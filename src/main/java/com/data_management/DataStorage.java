@@ -58,7 +58,6 @@ public class DataStorage {
         }
         patient.addRecord(measurementValue, recordType, timestamp);
     }
-    
 
     /**
      * Retrieves a list of PatientRecord objects for a specific patient, filtered by

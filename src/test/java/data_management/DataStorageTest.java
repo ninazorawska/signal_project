@@ -15,6 +15,7 @@ class DataStorageTest {
 
     @BeforeEach
     void setUp() {
+        DataStorage.resetInstance();
         dataStorage = DataStorage.getInstance();
     }
 
@@ -31,21 +32,13 @@ class DataStorageTest {
         assertEquals(1, records2.size());
     }
 
-
-
     @Test
-    void testGetRecordsWithNoPatient() {
-        List<PatientRecord> records = dataStorage.getRecords(1, 1714376789040L, 1714376789060L);
-        assertTrue(records.isEmpty());
-    }
-
-    @Test
-    void testGetAllPatients() {
+    void testAddPatientDataWithDuplicateRecords() {
         dataStorage.addPatientData(1, 100.0, "HeartRate", 1714376789050L);
-        dataStorage.addPatientData(2, 130.0, "HeartRate", 1714376789052L);
+        dataStorage.addPatientData(1, 100.0, "HeartRate", 1714376789050L);
 
-        List<Patient> patients = dataStorage.getAllPatients();
-        assertEquals(2, patients.size());
+        List<PatientRecord> records = dataStorage.getRecords(1, 1714376789040L, 1714376789060L);
+        assertEquals(2, records.size());
     }
 
     @Test
@@ -58,31 +51,40 @@ class DataStorageTest {
     }
 
     @Test
-    void testGetRecordsWithNoData() {
-        dataStorage.addPatientData(1, 100.0, "HeartRate", 1714376789050L);
-        List<PatientRecord> records = dataStorage.getRecords(2, 1714376789040L, 1714376789060L);
-        assertTrue(records.isEmpty());
-    }
-
-    @Test
-    void testGetRecordsWithOverlappingTimeRanges() {
-        dataStorage.addPatientData(1, 100.0, "HeartRate", 1714376789050L);
-        dataStorage.addPatientData(1, 120.0, "BloodPressure", 1714376789055L);
-        dataStorage.addPatientData(1, 130.0, "HeartRate", 1714376789060L);
+    void testAddPatientDataWithNegativeValues() {
+        dataStorage.addPatientData(1, -100.0, "HeartRate", 1714376789050L);
+        dataStorage.addPatientData(1, -120.0, "BloodPressure", 1714376789051L);
 
         List<PatientRecord> records = dataStorage.getRecords(1, 1714376789050L, 1714376789060L);
-        assertEquals(3, records.size());
+        assertEquals(2, records.size());
+        assertEquals(-100.0, records.get(0).getMeasurementValue());
+        assertEquals(-120.0, records.get(1).getMeasurementValue());
     }
 
     @Test
-    void testAddAndRetrieveMultiplePatients() {
-        dataStorage.addPatientData(1, 100.0, "HeartRate", 1714376789050L);
-        dataStorage.addPatientData(2, 120.0, "BloodPressure", 1714376789051L);
-        dataStorage.addPatientData(3, 130.0, "HeartRate", 1714376789052L);
-        dataStorage.addPatientData(4, 140.0, "BloodPressure", 1714376789053L);
+    void testAddPatientDataWithNullValues() {
+        assertThrows(NullPointerException.class, () -> {
+            dataStorage.addPatientData(1, 100.0, null, 1714376789050L);
+        }, "Record type cannot be null");
+    }
 
-        List<Patient> patients = dataStorage.getAllPatients();
-        assertEquals(4, patients.size());
+    @Test
+    void testConcurrency() throws InterruptedException {
+        Runnable addTask = () -> {
+            for (int i = 0; i < 100; i++) {
+                dataStorage.addPatientData(1, 100.0 + i, "HeartRate", 1714376789050L + i);
+            }
+        };
+
+        Thread thread1 = new Thread(addTask);
+        Thread thread2 = new Thread(addTask);
+        thread1.start();
+        thread2.start();
+        thread1.join();
+        thread2.join();
+
+        List<PatientRecord> records = dataStorage.getRecords(1, 1714376789050L, 1714376789150L);
+        assertEquals(200, records.size());
     }
 
     @Test
@@ -103,41 +105,27 @@ class DataStorageTest {
     }
 
     @Test
+    void testGetRecordsWithNoPatient() {
+        List<PatientRecord> records = dataStorage.getRecords(1, 1714376789040L, 1714376789060L);
+        assertTrue(records.isEmpty());
+    }
+
+    @Test
+    void testGetRecordsWithOverlappingTimeRanges() {
+        dataStorage.addPatientData(1, 100.0, "HeartRate", 1714376789050L);
+        dataStorage.addPatientData(1, 120.0, "BloodPressure", 1714376789055L);
+        dataStorage.addPatientData(1, 130.0, "HeartRate", 1714376789060L);
+
+        List<PatientRecord> records = dataStorage.getRecords(1, 1714376789050L, 1714376789060L);
+        assertEquals(3, records.size());
+    }
+
+    @Test
     void testGetRecordsWithPastTimeRange() {
         dataStorage.addPatientData(1, 100.0, "HeartRate", 1714376789050L);
 
         List<PatientRecord> records = dataStorage.getRecords(1, 1714376789040L, 1714376789049L);
         assertTrue(records.isEmpty());
-    }
-
-    @Test
-    void testConcurrency() throws InterruptedException {
-        Runnable addTask = () -> {
-            for (int i = 0; i < 100; i++) {
-                dataStorage.addPatientData(1, 100.0 + i, "HeartRate", 1714376789050L + i);
-            }
-        };
-
-        Thread thread1 = new Thread(addTask);
-        Thread thread2 = new Thread(addTask);
-        thread1.start();
-        thread2.start();
-        thread1.join();
-        thread2.join();
-
-        List<PatientRecord> records = dataStorage.getRecords(1, 1714376789050L, 1714376789150L);
-        assertEquals(200, records.size());
-        }
-
-    @Test
-    void testAddPatientDataWithNegativeValues() {
-        dataStorage.addPatientData(1, -100.0, "HeartRate", 1714376789050L);
-        dataStorage.addPatientData(1, -120.0, "BloodPressure", 1714376789051L);
-
-        List<PatientRecord> records = dataStorage.getRecords(1, 1714376789050L, 1714376789060L);
-        assertEquals(2, records.size());
-        assertEquals(-100.0, records.get(0).getMeasurementValue());
-        assertEquals(-120.0, records.get(1).getMeasurementValue());
     }
 
     @Test
@@ -150,19 +138,13 @@ class DataStorageTest {
     }
 
     @Test
-    void testAddPatientDataWithDuplicateRecords() {
+    void testAddAndRetrieveMultiplePatients() {
         dataStorage.addPatientData(1, 100.0, "HeartRate", 1714376789050L);
-        dataStorage.addPatientData(1, 100.0, "HeartRate", 1714376789051L);
+        dataStorage.addPatientData(2, 120.0, "BloodPressure", 1714376789051L);
+        dataStorage.addPatientData(3, 130.0, "HeartRate", 1714376789052L);
+        dataStorage.addPatientData(4, 140.0, "BloodPressure", 1714376789053L);
 
-        List<PatientRecord> records = dataStorage.getRecords(1, 1714376789040L, 1714376789060L);
-        assertEquals(2, records.size());
-    }
-
-
-    @Test
-    void testAddPatientDataWithNullValues() {
-        assertThrows(NullPointerException.class, () -> {
-            dataStorage.addPatientData(1, 100.0, null, 1714376789050L);
-        });
+        List<Patient> patients = dataStorage.getAllPatients();
+        assertEquals(4, patients.size());
     }
 }
