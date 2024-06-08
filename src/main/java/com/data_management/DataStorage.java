@@ -1,43 +1,45 @@
 package com.data_management;
 
 import java.util.concurrent.ConcurrentHashMap;
-import com.alerts.AlertGenerator;
-import java.util.ArrayList;
 import java.util.List;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.io.IOException;
+import java.util.ArrayList;
 
 /**
- * Manages storage and retrieval of patient data within a healthcare monitoring system.
- * This class serves as a repository for all patient records, organized by patient IDs.
+ * Manages storage and retrieval of patient data within a healthcare monitoring
+ * system. This class serves as a repository for all patient records, organized by
+ * patient IDs.
  */
 public class DataStorage {
 
     // Concurrent HashMap to store patient records
     private final ConcurrentHashMap<Integer, Patient> patientMap;
 
-    /**
-     * Constructs a new instance of DataStorage, initializing the underlying storage structure.
-     * 
-     * @param reader DataReader to read the initial data.
-     */
-    public DataStorage(DataReader reader) {
-        this.patientMap = new ConcurrentHashMap<>();
+    // Singleton instance
+    private static DataStorage instance;
 
-        try {
-            reader.readData(this);
-        } catch (IOException e) {
-            e.printStackTrace();
-            // Handle the IOException appropriately
+    /**
+     * Private constructor to prevent instantiation
+     */
+    private DataStorage() {
+        this.patientMap = new ConcurrentHashMap<>();
+    }
+
+    /**
+     * Static method to get the singleton instance of DataStorage
+     *
+     * @return singleton instance of DataStorage
+     */
+    public static synchronized DataStorage getInstance() {
+        if (instance == null) {
+            instance = new DataStorage();
         }
+        return instance;
     }
 
     /**
      * Adds or updates patient data in the storage.
-     * If the patient does not exist, a new Patient object is created and added to the storage.
-     * Otherwise, the new data is added to the existing patient's records.
+     * If the patient does not exist, a new Patient object is created and added to
+     * the storage. Otherwise, the new data is added to the existing patient's records.
      *
      * @param patientId        the unique identifier of the patient
      * @param measurementValue the value of the health metric being recorded
@@ -56,9 +58,11 @@ public class DataStorage {
         }
         patient.addRecord(measurementValue, recordType, timestamp);
     }
+    
 
     /**
-     * Retrieves a list of PatientRecord objects for a specific patient, filtered by a time range.
+     * Retrieves a list of PatientRecord objects for a specific patient, filtered by
+     * a time range.
      *
      * @param patientId the unique identifier of the patient whose records are to be retrieved
      * @param startTime the start of the time range, in milliseconds since the Unix epoch
@@ -83,44 +87,9 @@ public class DataStorage {
     }
 
     /**
-     * The main method for the DataStorage class.
-     * Initializes the system, reads data into storage, and continuously monitors and evaluates patient data.
-     *
-     * @param args command line arguments
+     * Method to reset the instance for testing purposes.
      */
-    public static void main(String[] args) {
-        // Assuming the directoryPath is provided as a command line argument
-        if (args.length < 1) {
-            System.err.println("Please provide the directory path containing the data files.");
-            return;
-        }
-
-        Path directoryPath = Paths.get(args[0]);
-        DataReader reader = new FileDataReader(directoryPath);
-        DataStorage storage = new DataStorage(reader);
-
-        try {
-            reader.readData(storage);
-        } catch (IOException e) {
-            System.err.println("Error reading data: " + e.getMessage());
-            e.printStackTrace();
-        }
-
-        // Example of using DataStorage to retrieve and print records for a patient
-        List<PatientRecord> records = storage.getRecords(1, 1700000000000L, 1800000000000L);
-        for (PatientRecord record : records) {
-            System.out.println("Record for Patient ID: " + record.getPatientId() +
-                    ", Type: " + record.getRecordType() +
-                    ", Data: " + record.getMeasurementValue() +
-                    ", Timestamp: " + record.getTimestamp());
-        }
-
-        // Initialize the AlertGenerator with the storage
-        AlertGenerator alertGenerator = new AlertGenerator(storage);
-
-        // Evaluate all patients' data to check for conditions that may trigger alerts
-        for (Patient patient : storage.getAllPatients()) {
-            alertGenerator.evaluateData(patient);
-        }
+    public static synchronized void resetInstance() {
+        instance = null;
     }
 }

@@ -10,7 +10,7 @@ class AlertTest {
 
     @Test
     void testAlertConstructorAndGetters() {
-        Alert alert = new Alert("1", "High Heart Rate", 1714376789050L);
+        Alert alert = new Alert(1, "High Heart Rate", 1714376789050L, null);
 
         assertEquals("1", alert.getPatientId());
         assertEquals("High Heart Rate", alert.getCondition());

@@ -1,5 +1,8 @@
 package com.strategies;
 
+import com.alerts.Alert;
+import com.data_management.PatientRecord;
+
 public interface AlertStrategy {
-    void checkAlert();
+    Alert checkAlert(PatientRecord record);
 }

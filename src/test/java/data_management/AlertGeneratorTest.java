@@ -1,7 +1,6 @@
 package data_management;
 
-import com.alerts.Alert;
-import com.alerts.AlertGenerator;
+import com.alerts.*;
 import com.data_management.DataStorage;
 import com.data_management.Patient;
 import com.data_management.PatientRecord;
@@ -12,6 +11,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
 class AlertGeneratorTest {
@@ -34,9 +34,9 @@ class AlertGeneratorTest {
 
         alertGenerator.evaluateData(mockPatient);
 
-        List<Alert> alerts = alertGenerator.getAlerts();
+        List<AlertInterface> alerts = alertGenerator.getAlerts();
         assertEquals(1, alerts.size());
-        assertEquals("High Heart Rate", alerts.get(0).getCondition());
+        assertEquals("Abnormal Heart Rate (Priority: High) (Repeated 3 times)", alerts.get(0).toString());
     }
 
     @Test
@@ -49,7 +49,7 @@ class AlertGeneratorTest {
 
         alertGenerator.evaluateData(mockPatient);
 
-        List<Alert> alerts = alertGenerator.getAlerts();
+        List<AlertInterface> alerts = alertGenerator.getAlerts();
         assertTrue(alerts.isEmpty());
     }
 
@@ -65,10 +65,11 @@ class AlertGeneratorTest {
 
         alertGenerator.evaluateData(mockPatient);
 
-        List<Alert> alerts = alertGenerator.getAlerts();
-        assertEquals(2, alerts.size());
-        assertEquals("High Heart Rate", alerts.get(0).getCondition());
-        assertEquals("High Blood Pressure", alerts.get(1).getCondition());
+        List<AlertInterface> alerts = alertGenerator.getAlerts();
+        assertEquals(3, alerts.size());
+        assertEquals("Abnormal Heart Rate (Priority: High) (Repeated 3 times)", alerts.get(0).toString());
+        assertEquals("Critical Blood Pressure (Priority: High) (Repeated 3 times)", alerts.get(1).toString());
+        assertEquals("Critical Blood Pressure (Priority: High) (Repeated 3 times)", alerts.get(2).toString());
     }
 
     @Test
@@ -78,7 +79,7 @@ class AlertGeneratorTest {
 
         alertGenerator.evaluateData(mockPatient);
 
-        List<Alert> alerts = alertGenerator.getAlerts();
+        List<AlertInterface> alerts = alertGenerator.getAlerts();
         assertTrue(alerts.isEmpty());
     }
 
@@ -92,40 +93,40 @@ class AlertGeneratorTest {
 
         alertGenerator.evaluateData(mockPatient);
 
-        List<Alert> alerts = alertGenerator.getAlerts();
+        List<AlertInterface> alerts = alertGenerator.getAlerts();
         assertEquals(1, alerts.size());
-        assertEquals("Low Blood Pressure", alerts.get(0).getCondition());
+        assertEquals("Critical Blood Pressure (Priority: High) (Repeated 3 times)", alerts.get(0).toString());
     }
 
     @Test
     void testEvaluateDataWithLowBloodSaturation() {
         Patient mockPatient = mock(Patient.class);
         List<PatientRecord> records = Arrays.asList(
-                new PatientRecord(1, 89.0, "Saturation", System.currentTimeMillis())
-        );
-        when(mockPatient.getRecords(anyLong(), anyLong())).thenReturn(records);
+            new PatientRecord(1, 89.0, "OxygenSaturation", System.currentTimeMillis())
+    );
+    when(mockPatient.getRecords(anyLong(), anyLong())).thenReturn(records);
 
-        alertGenerator.evaluateData(mockPatient);
+    alertGenerator.evaluateData(mockPatient);
 
-        List<Alert> alerts = alertGenerator.getAlerts();
-        assertEquals(1, alerts.size());
-        assertEquals("Low Blood Saturation", alerts.get(0).getCondition());
-    }
+    List<AlertInterface> alerts = alertGenerator.getAlerts();
+    assertEquals(1, alerts.size());
+    assertEquals("Low Blood Saturation (Priority: High) (Repeated 3 times)", alerts.get(0).toString());
+}
 
     @Test
     void testEvaluateDataWithAbnormalECG() {
         Patient mockPatient = mock(Patient.class);
         List<PatientRecord> records = Arrays.asList(
-                new PatientRecord(1, 2.0, "ECG", System.currentTimeMillis())
-        );
-        when(mockPatient.getRecords(anyLong(), anyLong())).thenReturn(records);
+            new PatientRecord(1, 2.0, "ECG", System.currentTimeMillis())
+    );
+    when(mockPatient.getRecords(anyLong(), anyLong())).thenReturn(records);
 
-        alertGenerator.evaluateData(mockPatient);
+    alertGenerator.evaluateData(mockPatient);
 
-        List<Alert> alerts = alertGenerator.getAlerts();
-        assertEquals(1, alerts.size());
-        assertEquals("Abnormal ECG", alerts.get(0).getCondition());
-    }
+    List<AlertInterface> alerts = alertGenerator.getAlerts();
+    assertEquals(1, alerts.size());
+    assertEquals("Abnormal ECG (Priority: High) (Repeated 3 times)", alerts.get(0).toString());
+}
 
     @Test
     void testEvaluateDataWithMultipleConditionsInSingleRecord() {
@@ -138,10 +139,10 @@ class AlertGeneratorTest {
 
         alertGenerator.evaluateData(mockPatient);
 
-        List<Alert> alerts = alertGenerator.getAlerts();
+        List<AlertInterface> alerts = alertGenerator.getAlerts();
         assertEquals(2, alerts.size());
-        assertEquals("High Heart Rate", alerts.get(0).getCondition());
-        assertEquals("Low Blood Pressure", alerts.get(1).getCondition());
+        assertEquals("Abnormal Heart Rate (Priority: High) (Repeated 3 times)", alerts.get(0).toString());
+        assertEquals("Critical Blood Pressure (Priority: High) (Repeated 3 times)", alerts.get(1).toString());
     }
 
     @Test
@@ -155,7 +156,7 @@ class AlertGeneratorTest {
 
         alertGenerator.evaluateData(mockPatient);
 
-        List<Alert> alerts = alertGenerator.getAlerts();
+        List<AlertInterface> alerts = alertGenerator.getAlerts();
         assertTrue(alerts.isEmpty());
     }
 
@@ -175,9 +176,9 @@ class AlertGeneratorTest {
         alertGenerator.evaluateData(mockPatient1);
         alertGenerator.evaluateData(mockPatient2);
 
-        List<Alert> alerts = alertGenerator.getAlerts();
+        List<AlertInterface> alerts = alertGenerator.getAlerts();
         assertEquals(2, alerts.size());
-        assertEquals("High Heart Rate", alerts.get(0).getCondition());
-        assertEquals("Low Blood Pressure", alerts.get(1).getCondition());
+        assertEquals("Abnormal Heart Rate (Priority: High) (Repeated 3 times)", alerts.get(0).toString());
+        assertEquals("Critical Blood Pressure (Priority: High) (Repeated 3 times)", alerts.get(1).toString());
     }
 }

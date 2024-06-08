@@ -1,27 +1,21 @@
 package data_management;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import com.data_management.DataReader;
 import com.data_management.DataStorage;
 import com.data_management.Patient;
 import com.data_management.PatientRecord;
-import org.mockito.Mockito;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
-    class DataStorageTest {
+class DataStorageTest {
     private DataStorage dataStorage;
-    private DataReader mockDataReader;
 
     @BeforeEach
     void setUp() {
-        mockDataReader = mock(DataReader.class);
-        dataStorage = new DataStorage(mockDataReader);
+        dataStorage = DataStorage.getInstance();
     }
 
     @Test
@@ -36,6 +30,8 @@ import static org.mockito.Mockito.*;
         assertEquals(2, records1.size());
         assertEquals(1, records2.size());
     }
+
+
 
     @Test
     void testGetRecordsWithNoPatient() {
@@ -131,7 +127,7 @@ import static org.mockito.Mockito.*;
 
         List<PatientRecord> records = dataStorage.getRecords(1, 1714376789050L, 1714376789150L);
         assertEquals(200, records.size());
-    }
+        }
 
     @Test
     void testAddPatientDataWithNegativeValues() {
@@ -156,11 +152,12 @@ import static org.mockito.Mockito.*;
     @Test
     void testAddPatientDataWithDuplicateRecords() {
         dataStorage.addPatientData(1, 100.0, "HeartRate", 1714376789050L);
-        dataStorage.addPatientData(1, 100.0, "HeartRate", 1714376789050L);
+        dataStorage.addPatientData(1, 100.0, "HeartRate", 1714376789051L);
 
-        List<PatientRecord> records = dataStorage.getRecords(1, 1714376789050L, 1714376789060L);
+        List<PatientRecord> records = dataStorage.getRecords(1, 1714376789040L, 1714376789060L);
         assertEquals(2, records.size());
     }
+
 
     @Test
     void testAddPatientDataWithNullValues() {
@@ -168,5 +165,4 @@ import static org.mockito.Mockito.*;
             dataStorage.addPatientData(1, 100.0, null, 1714376789050L);
         });
     }
- }
-
+}

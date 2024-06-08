@@ -1,9 +1,8 @@
 package com.alerts;
 
-public class ECGAlertFactory extends AlertFactory {
+public class ECGAlertFactory implements AlertFactory {
     @Override
-    public Alert createAlert(String patientId, String condition, long timestamp) {
-        // Create a new Alert instance using the provided parameters
-        return new Alert(patientId, condition, timestamp);
+    public AlertInterface createAlert(int patientId, String condition, long timestamp) {
+        return new Alert(patientId, condition, timestamp, "High");
     }
 }

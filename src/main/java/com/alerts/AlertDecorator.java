@@ -1,30 +1,29 @@
-// package com.alerts;
+package com.alerts;
 
-// // Base decorator class implementing the Alert interface
-// public abstract class AlertDecorator implements Alert {
-//     protected Alert alert;
+public abstract class AlertDecorator implements AlertInterface {
+    protected AlertInterface decoratedAlert;
 
-//     public AlertDecorator(Alert alert) {
-//         this.alert = alert;
-//     }
+    public AlertDecorator(AlertInterface decoratedAlert) {
+        this.decoratedAlert = decoratedAlert;
+    }
 
-//     @Override
-//     public String getPatientId() {
-//         return alert.getPatientId();
-//     }
+    @Override
+    public String getPatientId() {
+        return decoratedAlert.getPatientId();
+    }
 
-//     @Override
-//     public String getCondition() {
-//         return alert.getCondition();
-//     }
+    @Override
+    public String getCondition() {
+        return decoratedAlert.getCondition();
+    }
 
-//     @Override
-//     public long getTimestamp() {
-//         return alert.getTimestamp();
-//     }
+    @Override
+    public long getTimestamp() {
+        return decoratedAlert.getTimestamp();
+    }
 
-//     @Override
-//     public String getMessage() {
-//         return alert.getMessage();
-//     }
-// }
+    @Override
+    public String getPriority() {
+        return decoratedAlert.getPriority();
+    }
+}
